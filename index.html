@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Print3D Pro — Sistema de Gestão</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1e2438;--card:#1a2035;
+  --border:#2a3350;--text:#e8eaf6;--muted:#7b8db0;
+  --green:#00e5a0;--blue:#4f9cf9;--orange:#ff9f43;--red:#ff6b6b;--purple:#a78bfa;
+  --teal:#2dd4bf;--yellow:#fbbf24;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:200px;background:var(--bg2);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;overflow-y:auto}
+.logo{padding:0 16px 20px;font-size:16px;font-weight:700;color:var(--green);letter-spacing:-.5px}
+.logo span{color:var(--muted);font-weight:400;font-size:12px;display:block;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;color:var(--muted);border-left:3px solid transparent;transition:.15s;font-size:13px}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--green);border-left-color:var(--green)}
+.nav-item i{font-size:16px;width:18px}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.8px;color:var(--muted);padding:16px 16px 6px;text-transform:uppercase}
+.main{flex:1;overflow:auto;background:var(--bg);margin-left:200px}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.page-title{font-size:18px;font-weight:600}
+.page-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.btn{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--green);color:#0f1117}
+.btn-primary:hover{background:#00c98a}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.content{padding:20px 24px}
+.page{display:none}
+.page.active{display:block}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.metric-value{font-size:22px;font-weight:700}
+.metric-sub{font-size:11px;margin-top:4px}
+.metric-sub.up{color:var(--green)}
+.metric-sub.down{color:var(--red)}
+.metric-sub.neu{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:600}
+.card-sub{font-size:11px;color:var(--muted)}
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:11px;color:var(--muted);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.4px}
+.table td{padding:9px 10px;border-bottom:1px solid rgba(42,51,80,.5);font-size:13px}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:var(--bg3)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(0,229,160,.15);color:var(--green)}
+.badge-orange{background:rgba(255,159,67,.15);color:var(--orange)}
+.badge-red{background:rgba(255,107,107,.15);color:var(--red)}
+.badge-blue{background:rgba(79,156,249,.15);color:var(--blue)}
+.badge-purple{background:rgba(167,139,250,.15);color:var(--purple)}
+.bar-container{margin-bottom:10px}
+.bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bar-track{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:.4s}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.field input,.field select{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 10px;font-size:13px;width:100%;outline:none}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.result-box{background:var(--bg3);border:1px solid var(--green);border-radius:8px;padding:14px;margin-top:12px}
+.result-box h4{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px}
+.result-row.total{border-top:1px solid var(--border);margin-top:6px;padding-top:10px;font-weight:700;font-size:15px}
+.result-row .green{color:var(--green)}
+.result-row .red{color:var(--red)}
+.result-row .orange{color:var(--orange)}
+.form-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
+.form-section h3{font-size:14px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.chart-area{height:120px;display:flex;align-items:flex-end;gap:4px;padding:8px 0}
+.bar3d{flex:1;border-radius:3px 3px 0 0;transition:.3s;cursor:pointer}
+.bar3d:hover{opacity:.8;filter:brightness(1.2)}
+.chart-labels{display:flex;gap:4px;margin-top:4px}
+.chart-labels span{flex:1;text-align:center;font-size:10px;color:var(--muted)}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(42,51,80,.5);font-size:13px}
+.stat-row:last-child{border-bottom:none}
+.tag{font-size:11px;padding:2px 7px;border-radius:4px;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;width:440px;max-height:85vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{cursor:pointer;color:var(--muted);font-size:20px;line-height:1;background:none;border:none;color:var(--muted)}
+.modal-close:hover{color:var(--text)}
+.modal .field{margin-bottom:10px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#0f1117;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:.3s;transform:translateY(10px)}
+.toast.show{opacity:1;transform:translateY(0)}
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+select option{background:var(--bg2);color:var(--text)}
+@media(max-width:700px){
+  .sidebar{width:52px;padding:8px 0}
+  .logo,.nav-section,.nav-item span{display:none}
+  .nav-item{justify-content:center;padding:12px}
+  .main{margin-left:52px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .input-row{grid-template-columns:1fr}
+  .modal{width:94vw}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="logo">Print3D Pro<span>Sistema de Gestão</span></div>
+  <div class="nav-section">Principal</div>
+  <div class="nav-item active" onclick="nav('dashboard')"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+  <div class="nav-item" onclick="nav('estoque')"><i class="ti ti-package"></i><span>Estoque</span></div>
+  <div class="nav-item" onclick="nav('compras')"><i class="ti ti-shopping-cart"></i><span>Compras</span></div>
+  <div class="nav-item" onclick="nav('vendas')"><i class="ti ti-receipt"></i><span>Vendas</span></div>
+  <div class="nav-section">Ferramentas</div>
+  <div class="nav-item" onclick="nav('calculadora')"><i class="ti ti-calculator"></i><span>Calculadora</span></div>
+  <div class="nav-item" onclick="nav('relatorios')"><i class="ti ti-chart-bar"></i><span>Relatórios</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="page-sub" id="page-sub">Visão geral da sua operação</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" onclick="openModal('modal-lancamento')"><i class="ti ti-bolt"></i> Lançar</button>
+      <button class="btn btn-primary" id="primary-btn" onclick="primaryAction()"><i class="ti ti-plus"></i> Nova Venda</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="metrics" id="metrics-dash"></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Faturamento Mensal</div><div class="card-sub">Últimos 6 meses</div></div></div>
+          <div class="chart-area" id="chart-fat"></div>
+          <div class="chart-labels" id="chart-fat-labels"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Status dos Pedidos</div><div class="card-sub">Distribuição atual</div></div></div>
+          <div style="margin-top:8px" id="status-bars"></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Últimas Vendas</div>
+            <button class="btn btn-ghost" onclick="nav('vendas')" style="font-size:12px;padding:4px 10px">Ver todas</button>
+          </div>
+          <table class="table" id="dash-vendas"></table>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Estoque Crítico</div>
+            <button class="btn btn-ghost" onclick="nav('estoque')" style="font-size:12px;padding:4px 10px">Ver tudo</button>
+          </div>
+          <div id="estoque-critico"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESTOQUE -->
+    <div class="page" id="page-estoque">
+      <div class="metrics" id="metrics-est"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Materiais em Estoque</div>
+          <button class="btn btn-primary" onclick="openModal('modal-estoque')"><i class="ti ti-plus"></i> Adicionar Material</button>
+        </div>
+        <table class="table">
+          <thead><tr><th>Material</th><th>Tipo</th><th>Qtd</th><th>Un.</th><th>Custo/un</th><th>Valor Total</th><th>Status</th></tr></thead>
+          <tbody id="table-estoque"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COMPRAS -->
+    <div class="page" id="page-compras">
+      <div class="metrics" id="metrics-comp"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Histórico de Compras</div>
+          <button class="btn btn-primary" onclick="openModal('modal-compra')"><i class="ti ti-plus"></i> Registrar Compra</button>
+        </div>
+        <table class="table">
+          <thead><tr><th>Data</th><th>Material</th><th>Qtd</th><th>Valor Unit.</th><th>Total</th><th>Fornecedor</th><th>Status</th></tr></thead>
+          <tbody id="table-compras"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- VENDAS -->
+    <div class="page" id="page-vendas">
+      <div class="metrics" id="metrics-vend"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Registro de Vendas</div>
+          <button class="btn btn-primary" onclick="openModal('modal-venda')"><i class="ti ti-plus"></i> Nova Venda</button>
+        </div>
+        <table class="table">
+          <thead><tr><th>Data</th><th>Produto</th><th>Cliente</th><th>Custo</th><th>Venda</th><th>Lucro</th><th>Margem</th><th>Status</th></tr></thead>
+          <tbody id="table-vendas"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALCULADORA -->
+    <div class="page" id="page-calculadora">
+      <div class="grid2">
+        <div>
+          <div class="form-section">
+            <h3><i class="ti ti-printer"></i>Calculadora de Impressão</h3>
+            <div class="input-row">
+              <div class="field"><label>Peso do Filamento (g)</label><input type="number" id="c-peso" value="50" min="1" oninput="calcular()"></div>
+              <div class="field"><label>Custo do Filamento (R$/kg)</label><input type="number" id="c-custo-fil" value="120" min="1" oninput="calcular()"></div>
+            </div>
+            <div class="input-row">
+              <div class="field"><label>Tempo de Impressão (h)</label><input type="number" id="c-tempo" value="4" min="0.1" step="0.1" oninput="calcular()"></div>
+              <div class="field"><label>Custo kWh (R$)</label><input type="number" id="c-kwh" value="0.70" step="0.01" oninput="calcular()"></div>
+            </div>
+            <div class="input-row">
+              <div class="field"><label>Potência da Impressora (W)</label><input type="number" id="c-watts" value="220" oninput="calcular()"></div>
+              <div class="field"><label>Falha estimada (%)</label><input type="number" id="c-falha" value="5" min="0" max="50" oninput="calcular()"></div>
+            </div>
+            <div class="input-row">
+              <div class="field"><label>Depreciação/h (R$)</label><input type="number" id="c-depreciacao" value="2.50" step="0.10" oninput="calcular()"></div>
+              <div class="field"><label>Mão de obra/h (R$)</label><input type="number" id="c-mao-obra" value="15" oninput="calcular()"></div>
+            </div>
+            <div class="input-row">
+              <div class="field"><label>Margem de Lucro (%)</label><input type="number" id="c-margem" value="40" min="1" oninput="calcular()"></div>
+              <div class="field"><label>Outros custos (R$)</label><input type="number" id="c-outros" value="2" step="0.50" oninput="calcular()"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="result-box" id="resultado-calc">
+            <h4>Resultado da Calculadora</h4>
+            <div id="calc-rows"></div>
+          </div>
+          <div class="form-section" style="margin-top:16px">
+            <h3><i class="ti ti-percentage"></i>Simulador de Lucro</h3>
+            <div class="input-row">
+              <div class="field"><label>Preço de Venda (R$)</label><input type="number" id="sim-preco" value="0" oninput="simular()"></div>
+              <div class="field"><label>Quantidade</label><input type="number" id="sim-qtd" value="1" oninput="simular()"></div>
+            </div>
+            <div id="sim-resultado"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <div class="page" id="page-relatorios">
+      <div class="metrics" id="metrics-rel"></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Lucro por Produto</div></div>
+          <div id="relat-produtos"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Resumo Financeiro</div></div>
+          <div id="relat-financeiro"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Evolução de Faturamento</div><div class="card-sub">Últimos 6 meses</div></div>
+        <div style="height:180px;display:flex;align-items:flex-end;gap:6px;padding:8px 0" id="relat-chart"></div>
+        <div class="chart-labels" id="relat-chart-labels"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ===== MODAIS ===== -->
+
+<!-- Modal Venda -->
+<div class="modal-overlay" id="modal-venda" onclick="bgClose(event,'modal-venda')">
+<div class="modal">
+  <h3>Nova Venda <button class="modal-close" onclick="closeModal('modal-venda')">✕</button></h3>
+  <div class="field"><label>Produto</label><input id="v-produto" placeholder="Ex: Suporte de parede"></div>
+  <div class="field"><label>Cliente</label><input id="v-cliente" placeholder="Nome do cliente"></div>
+  <div class="input-row">
+    <div class="field"><label>Custo de Produção (R$)</label><input type="number" id="v-custo" value="0" step="0.01"></div>
+    <div class="field"><label>Preço de Venda (R$)</label><input type="number" id="v-preco" value="0" step="0.01"></div>
+  </div>
+  <div class="field"><label>Status</label>
+    <select id="v-status">
+      <option value="Concluído">Concluído</option>
+      <option value="Em produção">Em produção</option>
+      <option value="Aguardando">Aguardando</option>
+      <option value="Entregue">Entregue</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-venda')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:2" onclick="salvarVenda()"><i class="ti ti-check"></i> Salvar Venda</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal Compra -->
+<div class="modal-overlay" id="modal-compra" onclick="bgClose(event,'modal-compra')">
+<div class="modal">
+  <h3>Registrar Compra <button class="modal-close" onclick="closeModal('modal-compra')">✕</button></h3>
+  <div class="field"><label>Material</label><input id="cp-material" placeholder="Ex: PLA 1kg Branco"></div>
+  <div class="input-row">
+    <div class="field"><label>Quantidade</label><input type="number" id="cp-qtd" value="1" step="0.1"></div>
+    <div class="field"><label>Unidade</label><select id="cp-un"><option>kg</option><option>un</option><option>l</option><option>m</option><option>rolo</option></select></div>
+  </div>
+  <div class="input-row">
+    <div class="field"><label>Valor Unitário (R$)</label><input type="number" id="cp-unit" value="0" step="0.01"></div>
+    <div class="field"><label>Fornecedor</label><input id="cp-forn" placeholder="Nome do fornecedor"></div>
+  </div>
+  <div class="field"><label>Status</label>
+    <select id="cp-status"><option value="Recebido">Recebido</option><option value="Pendente">Pendente</option><option value="A caminho">A caminho</option></select>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-compra')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:2" onclick="salvarCompra()"><i class="ti ti-check"></i> Registrar</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal Estoque -->
+<div class="modal-overlay" id="modal-estoque" onclick="bgClose(event,'modal-estoque')">
+<div class="modal">
+  <h3>Adicionar ao Estoque <button class="modal-close" onclick="closeModal('modal-estoque')">✕</button></h3>
+  <div class="field"><label>Material</label><input id="e-material" placeholder="Ex: PETG 1kg Preto"></div>
+  <div class="field"><label>Tipo</label>
+    <select id="e-tipo"><option>Filamento</option><option>Resina</option><option>Suporte</option><option>Acabamento</option><option>Outro</option></select>
+  </div>
+  <div class="input-row">
+    <div class="field"><label>Quantidade</label><input type="number" id="e-qtd" value="1" step="0.1"></div>
+    <div class="field"><label>Unidade</label><select id="e-un"><option>kg</option><option>un</option><option>l</option><option>m</option><option>rolo</option></select></div>
+  </div>
+  <div class="field"><label>Custo por Unidade (R$)</label><input type="number" id="e-custo" value="0" step="0.01"></div>
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-estoque')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:2" onclick="salvarEstoque()"><i class="ti ti-check"></i> Salvar</button>
+  </div>
+</div>
+</div>
+
+<!-- Modal Lançamento Rápido -->
+<div class="modal-overlay" id="modal-lancamento" onclick="bgClose(event,'modal-lancamento')">
+<div class="modal">
+  <h3>Lançamento Rápido <button class="modal-close" onclick="closeModal('modal-lancamento')">✕</button></h3>
+  <div class="field"><label>Tipo</label>
+    <select id="l-tipo">
+      <option value="venda">Venda</option>
+      <option value="compra">Compra de Material</option>
+      <option value="estoque">Entrada de Estoque</option>
+    </select>
+  </div>
+  <div class="field"><label>Descrição</label><input id="l-desc" placeholder="Descrição rápida"></div>
+  <div class="field"><label>Valor (R$)</label><input type="number" id="l-valor" value="0" step="0.01"></div>
+  <div style="display:flex;gap:8px;margin-top:16px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-lancamento')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:2" onclick="salvarLancamento()"><i class="ti ti-bolt"></i> Lançar</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const hoje=new Date();
+const mesAtual=hoje.getMonth();
+
+let state={
+  vendas:[
+    {data:'2025-05-10',produto:'Suporte de Parede',cliente:'João Silva',custo:18,preco:65,status:'Entregue'},
+    {data:'2025-05-11',produto:'Miniatura Goku',cliente:'Maria Souza',custo:22,preco:80,status:'Concluído'},
+    {data:'2025-05-13',produto:'Case iPhone 15',cliente:'Pedro Costa',custo:12,preco:45,status:'Em produção'},
+    {data:'2025-05-14',produto:'Engrenagem Industrial',cliente:'Empresa XYZ',custo:35,preco:180,status:'Aguardando'},
+    {data:'2025-05-15',produto:'Porta Canetas',cliente:'Ana Lima',custo:9,preco:35,status:'Concluído'},
+  ],
+  compras:[
+    {data:'2025-05-01',material:'PLA 1kg Branco',qtd:2,unit:89.90,forn:'Bambu Store',status:'Recebido'},
+    {data:'2025-05-05',material:'PETG 1kg Preto',qtd:1,unit:105.00,forn:'3D Brasil',status:'Recebido'},
+    {data:'2025-05-08',material:'Resina UV 500ml',qtd:3,unit:75.00,forn:'AliExpress',status:'A caminho'},
+    {data:'2025-05-12',material:'PLA+ 1kg Vermelho',qtd:1,unit:95.00,forn:'Bambu Store',status:'Pendente'},
+  ],
+  estoque:[
+    {material:'PLA Branco',tipo:'Filamento',qtd:1.4,un:'kg',custo:89.90},
+    {material:'PETG Preto',tipo:'Filamento',qtd:0.8,un:'kg',custo:105.00},
+    {material:'PLA Azul',tipo:'Filamento',qtd:0.2,un:'kg',custo:92.00},
+    {material:'Resina Cinza',tipo:'Resina',qtd:0.5,un:'l',custo:150.00},
+    {material:'Limpa Bicos',tipo:'Suporte',qtd:5,un:'un',custo:3.50},
+  ]
+};
+
+function fmt(v){return'R$ '+Number(v).toFixed(2).replace('.',',')}
+function fmtPct(v){return Number(v).toFixed(1)+'%'}
+function dateStr(d){return new Date(d).toLocaleDateString('pt-BR')}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function nav(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+page+"'"))n.classList.add('active');
+  });
+  const titles={
+    dashboard:['Dashboard','Visão geral da sua operação'],
+    estoque:['Estoque','Controle de materiais'],
+    compras:['Compras','Histórico de gastos com materiais'],
+    vendas:['Vendas','Registro de pedidos e lucros'],
+    calculadora:['Calculadora','Precificação e análise de custos'],
+    relatorios:['Relatórios','Análise financeira completa']
+  };
+  const[t,s]=titles[page]||['',''];
+  document.getElementById('page-title').textContent=t;
+  document.getElementById('page-sub').textContent=s;
+  const btn=document.getElementById('primary-btn');
+  const acts={dashboard:'Nova Venda',estoque:'+ Material',compras:'+ Compra',vendas:'Nova Venda',calculadora:'Calcular',relatorios:'Exportar'};
+  btn.innerHTML=`<i class="ti ti-plus"></i> ${acts[page]||'Ação'}`;
+  renderPage(page);
+}
+
+function primaryAction(){
+  const pg=document.querySelector('.nav-item.active').getAttribute('onclick').match(/'(\w+)'/)[1];
+  if(pg==='vendas'||pg==='dashboard')openModal('modal-venda');
+  else if(pg==='compras')openModal('modal-compra');
+  else if(pg==='estoque')openModal('modal-estoque');
+  else if(pg==='calculadora')calcular();
+}
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function bgClose(e,id){if(e.target===e.currentTarget)closeModal(id)}
+
+function badgeStatus(s){
+  const m={Concluído:'green',Entregue:'green','Em produção':'blue',Aguardando:'orange',Recebido:'green','A caminho':'blue',Pendente:'orange'};
+  return`<span class="badge badge-${m[s]||'purple'}">${s}</span>`;
+}
+
+function salvarVenda(){
+  state.vendas.unshift({
+    data:new Date().toISOString().slice(0,10),
+    produto:document.getElementById('v-produto').value||'Produto s/nome',
+    cliente:document.getElementById('v-cliente').value||'Sem nome',
+    custo:parseFloat(document.getElementById('v-custo').value)||0,
+    preco:parseFloat(document.getElementById('v-preco').value)||0,
+    status:document.getElementById('v-status').value
+  });
+  closeModal('modal-venda');
+  document.getElementById('v-produto').value='';
+  document.getElementById('v-cliente').value='';
+  document.getElementById('v-custo').value='0';
+  document.getElementById('v-preco').value='0';
+  toast('✓ Venda registrada com sucesso!');
+  renderPage(currentPage());
+}
+
+function salvarCompra(){
+  state.compras.unshift({
+    data:new Date().toISOString().slice(0,10),
+    material:document.getElementById('cp-material').value||'Material',
+    qtd:parseFloat(document.getElementById('cp-qtd').value)||1,
+    unit:parseFloat(document.getElementById('cp-unit').value)||0,
+    forn:document.getElementById('cp-forn').value||'—',
+    status:document.getElementById('cp-status').value
+  });
+  closeModal('modal-compra');
+  document.getElementById('cp-material').value='';
+  document.getElementById('cp-unit').value='0';
+  document.getElementById('cp-forn').value='';
+  toast('✓ Compra registrada!');
+  renderPage(currentPage());
+}
+
+function salvarEstoque(){
+  state.estoque.push({
+    material:document.getElementById('e-material').value||'Material',
+    tipo:document.getElementById('e-tipo').value,
+    qtd:parseFloat(document.getElementById('e-qtd').value)||1,
+    un:document.getElementById('e-un').value,
+    custo:parseFloat(document.getElementById('e-custo').value)||0
+  });
+  closeModal('modal-estoque');
+  document.getElementById('e-material').value='';
+  document.getElementById('e-qtd').value='1';
+  document.getElementById('e-custo').value='0';
+  toast('✓ Material adicionado ao estoque!');
+  renderPage(currentPage());
+}
+
+function salvarLancamento(){
+  const tipo=document.getElementById('l-tipo').value;
+  const desc=document.getElementById('l-desc').value||'Lançamento';
+  const val=parseFloat(document.getElementById('l-valor').value)||0;
+  if(tipo==='venda')state.vendas.unshift({data:new Date().toISOString().slice(0,10),produto:desc,cliente:'—',custo:0,preco:val,status:'Concluído'});
+  else if(tipo==='compra')state.compras.unshift({data:new Date().toISOString().slice(0,10),material:desc,qtd:1,unit:val,forn:'—',status:'Recebido'});
+  else state.estoque.push({material:desc,tipo:'Outro',qtd:1,un:'un',custo:val});
+  closeModal('modal-lancamento');
+  document.getElementById('l-desc').value='';
+  document.getElementById('l-valor').value='0';
+  toast('✓ Lançamento registrado!');
+  renderPage(currentPage());
+}
+
+function currentPage(){
+  const a=document.querySelector('.nav-item.active');
+  return a?a.getAttribute('onclick').match(/'(\w+)'/)[1]:'dashboard';
+}
+
+/* ===== RENDERS ===== */
+
+function renderDashboard(){
+  const fat=state.vendas.reduce((a,v)=>a+v.preco,0);
+  const custo=state.vendas.reduce((a,v)=>a+v.custo,0);
+  const lucro=fat-custo;
+  const margem=fat>0?lucro/fat*100:0;
+  const comp=state.compras.reduce((a,c)=>a+c.qtd*c.unit,0);
+  document.getElementById('metrics-dash').innerHTML=`
+    <div class="metric"><div class="metric-label">Faturamento</div><div class="metric-value" style="color:var(--green)">${fmt(fat)}</div><div class="metric-sub up">▲ Total acumulado</div></div>
+    <div class="metric"><div class="metric-label">Lucro Líquido</div><div class="metric-value" style="color:var(--blue)">${fmt(lucro)}</div><div class="metric-sub ${lucro>=0?'up':'down'}">${fmtPct(margem)} de margem</div></div>
+    <div class="metric"><div class="metric-label">Total Compras</div><div class="metric-value" style="color:var(--orange)">${fmt(comp)}</div><div class="metric-sub neu">${state.compras.length} compras</div></div>
+    <div class="metric"><div class="metric-label">Pedidos</div><div class="metric-value">${state.vendas.length}</div><div class="metric-sub up">${state.vendas.filter(v=>v.status==='Concluído'||v.status==='Entregue').length} concluídos</div></div>
+    <div class="metric"><div class="metric-label">Ticket Médio</div><div class="metric-value">${state.vendas.length?fmt(fat/state.vendas.length):fmt(0)}</div><div class="metric-sub neu">por venda</div></div>
+  `;
+  const fats=[];const meses=[];
+  for(let i=5;i>=0;i--){const m=(mesAtual-i+12)%12;meses.push(MESES[m]);fats.push(Math.round(fat/6*(0.5+Math.random()*1.2)));}
+  fats[5]=Math.round(fat*0.3)||60;
+  const maxF=Math.max(...fats,1);
+  const bgColors=['#1e2a40','#243050','#2a3860','#304070','#365080','var(--green)'];
+  document.getElementById('chart-fat').innerHTML=fats.map((v,i)=>`<div class="bar3d" style="height:${Math.round(v/maxF*100)}%;background:${bgColors[i]};min-height:4px" title="${meses[i]}: ${fmt(v)}"></div>`).join('');
+  document.getElementById('chart-fat-labels').innerHTML=meses.map(m=>`<span>${m}</span>`).join('');
+  const statusCount={};state.vendas.forEach(v=>{statusCount[v.status]=(statusCount[v.status]||0)+1});
+  const sCols={'Concluído':'var(--green)','Entregue':'var(--teal)','Em produção':'var(--blue)','Aguardando':'var(--orange)'};
+  document.getElementById('status-bars').innerHTML=Object.entries(statusCount).map(([s,c])=>`
+    <div class="bar-container"><div class="bar-label"><span>${s}</span><span style="color:var(--muted)">${c}</span></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${c/state.vendas.length*100}%;background:${sCols[s]||'var(--purple)'}"></div></div></div>
+  `).join('')||'<div class="empty">Nenhum pedido registrado</div>';
+  document.getElementById('dash-vendas').innerHTML=`
+    <thead><tr><th>Produto</th><th>Preço</th><th>Status</th></tr></thead>
+    <tbody>${state.vendas.slice(0,5).map(v=>`<tr><td>${v.produto}</td><td style="color:var(--green)">${fmt(v.preco)}</td><td>${badgeStatus(v.status)}</td></tr>`).join('')}</tbody>
+  `;
+  const criticos=state.estoque.filter(e=>e.qtd<0.5);
+  document.getElementById('estoque-critico').innerHTML=criticos.length
+    ?criticos.map(e=>`<div class="bar-container"><div class="bar-label"><span>${e.material}</span><span class="badge badge-red">${e.qtd} ${e.un}</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(e.qtd*100,100)}%;background:var(--red)"></div></div></div>`).join('')
+    :state.estoque.slice(0,4).map(e=>`<div class="stat-row"><span>${e.material}</span><span style="color:var(--green)">${e.qtd} ${e.un}</span></div>`).join('');
+}
+
+function renderEstoque(){
+  const tv=state.estoque.reduce((a,e)=>a+e.qtd*e.custo,0);
+  const criticos=state.estoque.filter(e=>e.qtd<0.5).length;
+  document.getElementById('metrics-est').innerHTML=`
+    <div class="metric"><div class="metric-label">Valor em Estoque</div><div class="metric-value" style="color:var(--blue)">${fmt(tv)}</div><div class="metric-sub neu">${state.estoque.length} materiais</div></div>
+    <div class="metric"><div class="metric-label">Itens Críticos</div><div class="metric-value" style="color:var(--red)">${criticos}</div><div class="metric-sub ${criticos>0?'down':'up'}">${criticos>0?'⚠ Repor logo':'✓ Estoque ok'}</div></div>
+    <div class="metric"><div class="metric-label">Total de Materiais</div><div class="metric-value">${state.estoque.length}</div><div class="metric-sub neu">cadastrados</div></div>
+  `;
+  document.getElementById('table-estoque').innerHTML=state.estoque.map(e=>{
+    const total=e.qtd*e.custo;
+    const s=e.qtd<0.3?`<span class="badge badge-red">Crítico</span>`:e.qtd<0.7?`<span class="badge badge-orange">Baixo</span>`:`<span class="badge badge-green">OK</span>`;
+    return`<tr><td>${e.material}</td><td><span class="tag">${e.tipo}</span></td><td>${e.qtd}</td><td>${e.un}</td><td>${fmt(e.custo)}</td><td style="color:var(--blue)">${fmt(total)}</td><td>${s}</td></tr>`;
+  }).join('')||`<tr><td colspan="7" class="empty">Nenhum material cadastrado</td></tr>`;
+}
+
+function renderCompras(){
+  const tv=state.compras.reduce((a,c)=>a+c.qtd*c.unit,0);
+  document.getElementById('metrics-comp').innerHTML=`
+    <div class="metric"><div class="metric-label">Total Investido</div><div class="metric-value" style="color:var(--orange)">${fmt(tv)}</div><div class="metric-sub neu">${state.compras.length} compras</div></div>
+    <div class="metric"><div class="metric-label">Ticket Médio</div><div class="metric-value">${state.compras.length?fmt(tv/state.compras.length):fmt(0)}</div><div class="metric-sub neu">por compra</div></div>
+    <div class="metric"><div class="metric-label">Pendentes</div><div class="metric-value" style="color:var(--orange)">${state.compras.filter(c=>c.status!=='Recebido').length}</div><div class="metric-sub neu">em andamento</div></div>
+  `;
+  document.getElementById('table-compras').innerHTML=state.compras.map(c=>`
+    <tr><td>${dateStr(c.data)}</td><td>${c.material}</td><td>${c.qtd}</td><td>${fmt(c.unit)}</td>
+    <td style="color:var(--orange)">${fmt(c.qtd*c.unit)}</td><td>${c.forn}</td><td>${badgeStatus(c.status)}</td></tr>
+  `).join('')||`<tr><td colspan="7" class="empty">Nenhuma compra registrada</td></tr>`;
+}
+
+function renderVendas(){
+  const fat=state.vendas.reduce((a,v)=>a+v.preco,0);
+  const custo=state.vendas.reduce((a,v)=>a+v.custo,0);
+  const lucro=fat-custo;
+  document.getElementById('metrics-vend').innerHTML=`
+    <div class="metric"><div class="metric-label">Faturamento</div><div class="metric-value" style="color:var(--green)">${fmt(fat)}</div><div class="metric-sub neu">${state.vendas.length} vendas</div></div>
+    <div class="metric"><div class="metric-label">Lucro Total</div><div class="metric-value" style="color:var(--blue)">${fmt(lucro)}</div><div class="metric-sub up">${fat>0?fmtPct(lucro/fat*100):'0%'} de margem</div></div>
+    <div class="metric"><div class="metric-label">Custo Total</div><div class="metric-value" style="color:var(--orange)">${fmt(custo)}</div><div class="metric-sub neu">em produção</div></div>
+    <div class="metric"><div class="metric-label">Ticket Médio</div><div class="metric-value">${state.vendas.length?fmt(fat/state.vendas.length):fmt(0)}</div><div class="metric-sub neu">por venda</div></div>
+  `;
+  document.getElementById('table-vendas').innerHTML=state.vendas.map(v=>{
+    const lv=v.preco-v.custo;const mg=v.preco>0?lv/v.preco*100:0;
+    return`<tr><td>${dateStr(v.data)}</td><td>${v.produto}</td><td>${v.cliente}</td>
+      <td style="color:var(--orange)">${fmt(v.custo)}</td><td style="color:var(--green)">${fmt(v.preco)}</td>
+      <td style="color:${lv>=0?'var(--blue)':'var(--red)'}">${fmt(lv)}</td>
+      <td style="color:var(--muted)">${fmtPct(mg)}</td><td>${badgeStatus(v.status)}</td></tr>`;
+  }).join('')||`<tr><td colspan="8" class="empty">Nenhuma venda registrada</td></tr>`;
+}
+
+function renderRelatorios(){
+  const fat=state.vendas.reduce((a,v)=>a+v.preco,0);
+  const custo=state.vendas.reduce((a,v)=>a+v.custo,0);
+  const comp=state.compras.reduce((a,c)=>a+c.qtd*c.unit,0);
+  const lucro=fat-custo;
+  document.getElementById('metrics-rel').innerHTML=`
+    <div class="metric"><div class="metric-label">ROI</div><div class="metric-value" style="color:var(--green)">${comp>0?fmtPct(lucro/comp*100):'—'}</div><div class="metric-sub neu">retorno sobre investimento</div></div>
+    <div class="metric"><div class="metric-label">Faturamento</div><div class="metric-value" style="color:var(--green)">${fmt(fat)}</div><div class="metric-sub neu">${state.vendas.length} vendas</div></div>
+    <div class="metric"><div class="metric-label">Custo Produção</div><div class="metric-value" style="color:var(--orange)">${fmt(custo)}</div><div class="metric-sub neu">diretos</div></div>
+    <div class="metric"><div class="metric-label">Lucro Líquido</div><div class="metric-value" style="color:var(--blue)">${fmt(lucro)}</div><div class="metric-sub ${lucro>=0?'up':'down'}">${fat>0?fmtPct(lucro/fat*100):'0%'}</div></div>
+    <div class="metric"><div class="metric-label">Compras</div><div class="metric-value" style="color:var(--red)">${fmt(comp)}</div><div class="metric-sub neu">investido em material</div></div>
+  `;
+  const prods={};state.vendas.forEach(v=>{
+    if(!prods[v.produto])prods[v.produto]={fat:0,custo:0,cnt:0};
+    prods[v.produto].fat+=v.preco;prods[v.produto].custo+=v.custo;prods[v.produto].cnt++;
+  });
+  const sorted=Object.entries(prods).sort((a,b)=>b[1].fat-a[1].fat);
+  const maxP=sorted.length?sorted[0][1].fat:1;
+  document.getElementById('relat-produtos').innerHTML=sorted.length?sorted.map(([p,d])=>`
+    <div class="bar-container">
+      <div class="bar-label"><span>${p}</span><span style="color:var(--green)">${fmt(d.fat-d.custo)} lucro</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${d.fat/maxP*100}%;background:var(--blue)"></div></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${d.cnt} venda(s) · margem ${d.fat>0?fmtPct((d.fat-d.custo)/d.fat*100):'0%'}</div>
+    </div>
+  `).join(''):'<div class="empty">Nenhuma venda ainda</div>';
+  document.getElementById('relat-financeiro').innerHTML=`
+    <div class="stat-row"><span>Faturamento bruto</span><span style="color:var(--green)">${fmt(fat)}</span></div>
+    <div class="stat-row"><span>(-) Custo de produção</span><span style="color:var(--red)">- ${fmt(custo)}</span></div>
+    <div class="stat-row"><span>(=) Lucro bruto</span><span style="color:var(--blue)">${fmt(fat-custo)}</span></div>
+    <div class="stat-row"><span>(-) Total em compras</span><span style="color:var(--orange)">- ${fmt(comp)}</span></div>
+    <div class="stat-row" style="font-weight:700"><span>Resultado líquido estimado</span><span style="color:${(fat-custo-comp)>=0?'var(--green)':'var(--red)'}">${fmt(fat-custo-comp)}</span></div>
+    <div class="stat-row"><span>Margem líquida</span><span>${fat>0?fmtPct((fat-custo)/fat*100):'0%'}</span></div>
+  `;
+  const fats2=[];const meses2=[];
+  for(let i=5;i>=0;i--){const m=(mesAtual-i+12)%12;meses2.push(MESES[m]);fats2.push(Math.round(fat/6*(0.3+Math.random())));}
+  fats2[5]=Math.round(fat*0.35)||80;
+  const maxF2=Math.max(...fats2,1);
+  const bgs=['#243050','#2a3860','#304070','#365080','#3c6090','var(--green)'];
+  document.getElementById('relat-chart').innerHTML=fats2.map((v,i)=>`
+    <div style="flex:1;border-radius:4px 4px 0 0;background:${bgs[i]};height:${Math.round(v/maxF2*100)}%;min-height:6px;display:flex;align-items:flex-start;justify-content:center;padding-top:4px">
+      <span style="font-size:10px;color:rgba(255,255,255,.7);writing-mode:vertical-lr;transform:rotate(180deg)">${fmt(v)}</span>
+    </div>
+  `).join('');
+  document.getElementById('relat-chart-labels').innerHTML=meses2.map(m=>`<span>${m}</span>`).join('');
+}
+
+function calcular(){
+  const peso=parseFloat(document.getElementById('c-peso').value)||0;
+  const costKg=parseFloat(document.getElementById('c-custo-fil').value)||0;
+  const tempo=parseFloat(document.getElementById('c-tempo').value)||0;
+  const kwh=parseFloat(document.getElementById('c-kwh').value)||0;
+  const watts=parseFloat(document.getElementById('c-watts').value)||0;
+  const falha=parseFloat(document.getElementById('c-falha').value)||0;
+  const dep=parseFloat(document.getElementById('c-depreciacao').value)||0;
+  const maoObra=parseFloat(document.getElementById('c-mao-obra').value)||0;
+  const margem=parseFloat(document.getElementById('c-margem').value)||0;
+  const outros=parseFloat(document.getElementById('c-outros').value)||0;
+  const cFil=peso/1000*costKg;
+  const cEn=watts/1000*tempo*kwh;
+  const cFalha=(cFil+cEn)*falha/100;
+  const cDep=dep*tempo;
+  const cMO=maoObra*tempo;
+  const cTotal=cFil+cEn+cFalha+cDep+cMO+outros;
+  const precoSug=cTotal*(1+margem/100);
+  const lucroU=precoSug-cTotal;
+  document.getElementById('calc-rows').innerHTML=`
+    <div class="result-row"><span>Filamento (${peso}g)</span><span>${fmt(cFil)}</span></div>
+    <div class="result-row"><span>Energia (${watts}W × ${tempo}h)</span><span>${fmt(cEn)}</span></div>
+    <div class="result-row"><span>Risco de falha (${falha}%)</span><span>${fmt(cFalha)}</span></div>
+    <div class="result-row"><span>Depreciação (${tempo}h × R$${dep})</span><span>${fmt(cDep)}</span></div>
+    <div class="result-row"><span>Mão de obra (${tempo}h × R$${maoObra})</span><span>${fmt(cMO)}</span></div>
+    <div class="result-row"><span>Outros custos</span><span>${fmt(outros)}</span></div>
+    <div class="result-row total"><span>Custo Total</span><span class="orange">${fmt(cTotal)}</span></div>
+    <div class="result-row total"><span>Preço Sugerido (${margem}%)</span><span class="green">${fmt(precoSug)}</span></div>
+    <div class="result-row"><span>Lucro Unitário</span><span class="${lucroU>=0?'green':'red'}">${fmt(lucroU)}</span></div>
+  `;
+  document.getElementById('sim-preco').value=precoSug.toFixed(2);
+  simular();
+}
+
+function simular(){
+  const preco=parseFloat(document.getElementById('sim-preco').value)||0;
+  const qtd=parseInt(document.getElementById('sim-qtd').value)||1;
+  const peso=parseFloat(document.getElementById('c-peso').value)||0;
+  const costKg=parseFloat(document.getElementById('c-custo-fil').value)||0;
+  const tempo=parseFloat(document.getElementById('c-tempo').value)||0;
+  const kwh=parseFloat(document.getElementById('c-kwh').value)||0;
+  const watts=parseFloat(document.getElementById('c-watts').value)||0;
+  const falha=parseFloat(document.getElementById('c-falha').value)||0;
+  const dep=parseFloat(document.getElementById('c-depreciacao').value)||0;
+  const maoObra=parseFloat(document.getElementById('c-mao-obra').value)||0;
+  const outros=parseFloat(document.getElementById('c-outros').value)||0;
+  const cFil=peso/1000*costKg;
+  const cEn=watts/1000*tempo*kwh;
+  const cFalha=(cFil+cEn)*falha/100;
+  const cDep=dep*tempo;
+  const cMO=maoObra*tempo;
+  const custo=cFil+cEn+cFalha+cDep+cMO+outros;
+  const lucroU=preco-custo;
+  const lucroT=lucroU*qtd;
+  const mg=preco>0?lucroU/preco*100:0;
+  const col=lucroT>=0?'var(--green)':'var(--red)';
+  document.getElementById('sim-resultado').innerHTML=`
+    <div class="result-box" style="border-color:${col};margin-top:12px">
+      <h4>Simulação — ${qtd} unidade(s) a ${fmt(preco)}</h4>
+      <div class="result-row"><span>Custo unitário</span><span class="orange">${fmt(custo)}</span></div>
+      <div class="result-row"><span>Lucro por unidade</span><span class="${lucroU>=0?'green':'red'}">${fmt(lucroU)}</span></div>
+      <div class="result-row"><span>Margem</span><span>${fmtPct(mg)}</span></div>
+      <div class="result-row total"><span>Lucro Total (${qtd}×)</span><span class="${lucroT>=0?'green':'red'}">${fmt(lucroT)}</span></div>
+      <div class="result-row total"><span>Faturamento Total</span><span class="green">${fmt(preco*qtd)}</span></div>
+    </div>
+  `;
+}
+
+function renderPage(page){
+  if(page==='dashboard')renderDashboard();
+  else if(page==='estoque')renderEstoque();
+  else if(page==='compras')renderCompras();
+  else if(page==='vendas')renderVendas();
+  else if(page==='calculadora')calcular();
+  else if(page==='relatorios')renderRelatorios();
+}
+
+renderDashboard();
+</script>
+</body>
+</html>
